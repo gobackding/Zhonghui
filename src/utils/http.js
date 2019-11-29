@@ -1,6 +1,5 @@
 import { fetch as fetchPro } from "whatwg-fetch";
 import qs from "qs";
-
 const get = (url, data) => {
     if (data) {
         var str = "";
@@ -10,8 +9,6 @@ const get = (url, data) => {
 
         url = url + "?" + str.slice(1);
     }
-
-
     var result = fetchPro(url, {
         credentials: "include",
         headers: {
@@ -19,23 +16,17 @@ const get = (url, data) => {
         }
     }
     ).then(res => res.json());
-
-
     return result;
 }
-
-
 const post = (url, data) => {
     var result = fetchPro(url, {
         method: "post",
         credentials: "include",
         headers: {
-            "content-type": "application/x-www-form-urlencoded"
+            "content-type": "application/json"
         },
-        body: qs.stringify(data)
+        body: JSON.stringify(data)
     }).then(res=>res.json())
-
-
     return result;
 }
 

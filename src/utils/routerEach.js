@@ -1,33 +1,59 @@
-import React, { Fragment } from "react"
-import { Switch, Route, Redirect } from "react-router-dom"
-
+import React from "react"
+import { Switch, Route, Redirect } from "react-router-dom";
+import LayoutComponent from "@layout";
+import Cookies from "js-cookie";
 export default (routes) => {
-    const routesEach = (parmams) => {
-        return <Route path={parmams.path} key={parmams.key} render={() => {
-            // eslint-disable-next-line no-unused-expressions
-            <Fragment>
-                <Route component={parmams.component} />
-                <Redirect to={parmams.children[0].path} />
-                <Switch>
+
+    let eachRoutes = (route) => {
+        return <Route
+            key={route.key}
+            path={route.path}
+            render={() => {
+                return <Switch>
                     {
-                        parmams.children.map(child => {
+                        route.children.map((child) => {
                             if (child.children) {
-                                return routesEach(child)
+                                return eachRoutes(child)
+
                             } else {
-                                return <Route path={child.path} component={child.component} key={child.key}></Route>
+                                return <Route path={child.path} key={child.key} render={(props) => {
+                                    if (Cookies.get("token") || child.path === "/Login") {
+                                        return child.path === "/Login" ? <child.component {...props} /> : <LayoutComponent><child.component {...props} /></LayoutComponent>
+
+                                    } else {
+                                        return <Redirect to={{ pathname: "/Login" }} />
+                                    }
+                                }} />
+
                             }
                         })
                     }
-                </Switch>
-            </Fragment>
-        }} />
+                    })
+                }
+            </Switch>
+            }}
+        />
+
     }
+
+
 
     return routes.map((route) => {
         if (route.children) {
-            return routesEach(route)
+            return eachRoutes(route)
+
         } else {
-            return <Route path={route.path} component={route.component} key={route.key}></Route>
+            return <Route path={route.path} key={route.key} render={(props) => {
+                // 这里需要进行修改，判断当时登录注册页面的时候，是单独的页面的
+                if(route.path == "/Login" || route.path == "/Sign"){
+                    return <route.component {...props} key={route.key} />
+                }else if (Cookies.get("token") || route.path === "/Login") {
+                    return route.path === "/Login" ? <route.component {...props} key={route.key} /> : <LayoutComponent key={route.key}><route.component {...props} /></LayoutComponent>
+                } else {
+                    return <Redirect to={{ pathname: "/Login" }} />
+                }
+            }} />
+
         }
     })
 }
